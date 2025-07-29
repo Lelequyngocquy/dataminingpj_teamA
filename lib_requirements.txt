@@ -1,0 +1,9 @@
+#   Core libraries   
+#   pip install -r lib_requirements.txt
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+ttkbootstrap
+
