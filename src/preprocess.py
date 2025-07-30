@@ -86,4 +86,14 @@ def preprocess(df: pd.DataFrame):
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
 
+    # Rename final attributes
+    rename_dict = {
+        'TMP_C':    'Air Temperature (°C)',
+        'TMP_CLASS': 'Above Freezing Flag',
+        'DEW_VAL':  'Dew Point (°C)',
+        'SLP_VAL':  'Sea Level Pressure (hPa)',
+        'VIS_VAL':  'Visibility (km)'
+    }
+    
+    df.rename(columns=rename_dict, inplace=True)
     return X_train, X_test, y_train, y_test, df

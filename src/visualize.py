@@ -4,27 +4,40 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def plot_tmp_distribution(df: pd.DataFrame):
-    if "TMP_C" not in df.columns:
-        print("[WARN] No 'TMP_C' column to plot.")
+
+def plot_target_distribution(df: pd.DataFrame, target_name: str):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
+    if target_name not in df.columns:
+        print(f"[WARN] Column '{target_name}' not found in DataFrame.")
         return
 
     plt.figure(figsize=(8, 5))
-    sns.histplot(df["TMP_C"].dropna(), kde=True, color="skyblue")
-    plt.title("Temperature Distribution (°C)")
-    plt.xlabel("Temperature (°C)")
+    sns.histplot(df[target_name].dropna(), kde=True, color="skyblue")
+    plt.title(f"Distribution of {target_name} - The last trained")
+    plt.xlabel(target_name)
     plt.ylabel("Frequency")
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-    
-def plot_predictions(y_true, y_pred):
+
+
+def plot_predictions(y_true, y_pred, target_name="Target"):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
     plt.figure(figsize=(8, 6))
     sns.scatterplot(x=y_true, y=y_pred, color="steelblue", alpha=0.6)
-    plt.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], color="red", linestyle="--")
-    plt.xlabel("Actual TMP_C")
-    plt.ylabel("Predicted TMP_C")
-    plt.title("Actual vs Predicted TMP_C")
+    plt.plot(
+        [y_true.min(), y_true.max()],
+        [y_true.min(), y_true.max()],
+        color="red",
+        linestyle="--",
+    )
+    plt.xlabel(f"Actual {target_name}")
+    plt.ylabel(f"Predicted {target_name}")
+    plt.title(f"Actual vs Predicted {target_name}")
     plt.grid(True)
     plt.tight_layout()
     plt.show()
