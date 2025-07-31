@@ -2,19 +2,20 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import filedialog, messagebox
 import pandas as pd
+from sklearn.utils.multiclass import type_of_target
 
 pd.set_option("display.float_format", "{:.6f}".format)
 import os
 import platform
 import subprocess
-
+import numpy as np
 
 from src.data import load_csv, save_csv
 from src.preprocess import preprocess
 from src.model import train_model
 from src.evaluate import evaluate
 from src.visualize import plot_target_distribution, plot_predictions
-
+from src.crossvalidate import cross_validate_model
 import os
 
 
@@ -22,7 +23,7 @@ class DataMiningUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Data Mining Project - by TEAM A")
-        self.root.geometry("700x600")
+        self.root.geometry("700x650")
         self.df = None
         self.model = None
         self.y_test = None
@@ -67,7 +68,7 @@ class DataMiningUI:
         ttk.Button(
             root,
             text="Explore Data",
-            bootstyle="light",
+            bootstyle="info",
             width=40,
             command=self.explore_data,
         ).pack(pady=5)
@@ -93,12 +94,20 @@ class DataMiningUI:
             command=self.evaluate_model,
         ).pack(pady=5)
         ttk.Button(
+            root,
+            text="Cross Validate",
+            bootstyle="light",
+            width=40,
+            command=self.cross_validate_model,
+        ).pack(pady=5)
+
+        ttk.Button(
             root, text="Visualize", bootstyle="danger", width=40, command=self.visualize
         ).pack(pady=5)
 
         # Debug log panel
         ttk.Label(root, text="DEBUG LOG:", font=("Segoe UI", 11, "bold")).pack(
-            pady=(15, 5)
+            pady=(15, 10)
         )
         self.log_text = ttk.Text(root, height=10, font=("Consolas", 10))
         self.log_text.pack(fill=BOTH, expand=True, padx=15, pady=5)
@@ -216,9 +225,6 @@ class DataMiningUI:
                 self.y_train = self.df.loc[self.X_train.index, selected_target]
                 self.y_test = self.df.loc[self.X_test.index, selected_target]
 
-                # Suy đoán loại bài toán
-                from sklearn.utils.multiclass import type_of_target
-
                 task_type = type_of_target(self.y_train)
                 task = (
                     "classification"
@@ -246,7 +252,7 @@ class DataMiningUI:
                 self.log(f"[ERROR] Training failed: {e}")
                 messagebox.showerror("Error", f"Training failed: {e}")
 
-        # Nếu chưa có target_column → hiện popup
+        # Nếu chưa có target_column hiện popup
         if not hasattr(self, "target_column"):
             self.target_column = ttk.StringVar()
 
@@ -353,6 +359,87 @@ class DataMiningUI:
 
         ttk.Button(
             popup, text="Evaluate Now", bootstyle="success", command=evaluate_now
+        ).pack(pady=5)
+
+    def cross_validate_model(self):
+        if self.df is None or not self.target_column.get():
+            messagebox.showerror(
+                "Error", "Please preprocess the data and select a target column."
+            )
+            return
+
+        target = self.target_column.get()
+
+        popup = ttk.Toplevel(self.root)
+        popup.title(f"Cross Validation – Target: {target}")
+        popup.geometry("500x420")
+
+        ttk.Label(
+            popup,
+            text=f"Cross-validating target: {target}",
+            font=("Segoe UI", 12, "bold"),
+        ).pack(pady=(15, 5))
+
+        ttk.Label(popup, text="Select Task Type:", font=("Segoe UI", 11)).pack(
+            pady=(5, 2)
+        )
+
+        task_var = ttk.StringVar(value="regression")
+        task_menu = ttk.Combobox(
+            popup, textvariable=task_var, state="readonly", width=30
+        )
+        task_menu["values"] = ["regression", "classification"]
+        task_menu.pack(pady=5)
+
+        result_text = ttk.Text(popup, height=10, font=("Consolas", 10), wrap="word")
+        result_text.pack(fill="both", expand=True, padx=10, pady=(10, 10))
+        result_text.config(state="disabled")
+
+        def cross_validate_now():
+            task_type = task_var.get()
+            try:
+
+                y = self.df[target]
+                X = self.df.drop(columns=[target])
+
+                # Kiểm tra nếu chọn classification mà target column là continuous
+                target_type = type_of_target(y)
+                if task_type == "classification" and target_type == "continuous":
+                    warning_msg = (
+                        f"Target '{target}' is a continuous variable and cannot be used "
+                        f"for classification.\nPlease choose 'regression' instead."
+                    )
+                    self.log(f"[WARN] {warning_msg}")
+                    result_text.config(state="normal")
+                    result_text.delete("1.0", "end")
+                    result_text.insert("1.0", warning_msg)
+                    result_text.config(state="disabled")
+                    return
+
+                scores = cross_validate_model(X, y, task_type=task_type, cv=5)
+
+                result_msg = "\n".join(
+                    [f"Fold {i+1}: {score:.4f}" for i, score in enumerate(scores)]
+                )
+                result_msg += f"\n\nAverage Score: {np.mean(scores):.4f}"
+
+                self.log(
+                    f"[INFO] Cross-validation results for {task_type} – Target: {target}"
+                )
+                result_text.config(state="normal")
+                result_text.delete("1.0", "end")
+                result_text.insert("1.0", result_msg)
+                result_text.config(state="disabled")
+
+            except Exception as e:
+                self.log(f"[ERROR] Cross-validation failed: {e}")
+                messagebox.showerror("Error", f"Cross-validation failed: {e}")
+
+        ttk.Button(
+            popup,
+            text="Cross Validate Now",
+            bootstyle="info",
+            command=cross_validate_now,
         ).pack(pady=5)
 
     def visualize(self):
