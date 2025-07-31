@@ -246,7 +246,7 @@ class DataMiningUI:
                 self.log(f"[ERROR] Training failed: {e}")
                 messagebox.showerror("Error", f"Training failed: {e}")
 
-        # Nếu chưa có target_column → hiện popup
+        # Nếu chưa có target_column -> hiện popup
         if not hasattr(self, "target_column"):
             self.target_column = ttk.StringVar()
 
