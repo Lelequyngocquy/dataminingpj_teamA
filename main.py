@@ -165,7 +165,7 @@ class DataMiningUI:
             popup, text="Data Exploration Summary", font=("Segoe UI", 14, "bold")
         ).pack(pady=10)
 
-        text_widget = ttk.Text(popup, wrap="word", font=("Consolas", 15))
+        text_widget = ttk.Text(popup, wrap="word", font=("Consolas", 14))
         text_widget.insert("1.0", info)
         text_widget.config(state="disabled")
         text_widget.pack(fill="both", expand=True, padx=15, pady=10)
@@ -310,7 +310,7 @@ class DataMiningUI:
         task_menu["values"] = ["regression", "classification", "clustering"]
         task_menu.pack(pady=5)
 
-        result_text = ttk.Text(popup, height=10, font=("Consolas", 10), wrap="word")
+        result_text = ttk.Text(popup, height=10, font=("Consolas", 14), wrap="word")
         result_text.pack(fill="both", expand=True, padx=10, pady=(10, 10))
         result_text.config(state="disabled")
 
@@ -346,7 +346,7 @@ class DataMiningUI:
                 )
 
                 self.log(
-                    f"[INFO] Evaluation Results for {task_type} – Target: {target}"
+                    f"[INFO] Evaluation Results for {task_type} - Target: {target}"
                 )
                 result_text.config(state="normal")
                 result_text.delete("1.0", "end")
@@ -391,7 +391,7 @@ class DataMiningUI:
         task_menu["values"] = ["regression", "classification"]
         task_menu.pack(pady=5)
 
-        result_text = ttk.Text(popup, height=10, font=("Consolas", 10), wrap="word")
+        result_text = ttk.Text(popup, height=10, font=("Consolas", 14), wrap="word")
         result_text.pack(fill="both", expand=True, padx=10, pady=(10, 10))
         result_text.config(state="disabled")
 
@@ -424,7 +424,7 @@ class DataMiningUI:
                 result_msg += f"\n\nAverage Score: {np.mean(scores):.4f}"
 
                 self.log(
-                    f"[INFO] Cross-validation results for {task_type} – Target: {target}"
+                    f"[INFO] Cross-validation results for {task_type} - Target: {target}"
                 )
                 result_text.config(state="normal")
                 result_text.delete("1.0", "end")
